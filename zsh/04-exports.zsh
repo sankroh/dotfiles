@@ -21,3 +21,6 @@ export GREP_COLOR='3;33'
 
 export LESS='--ignore-case --raw-control-chars'
 export PAGER='less'
+
+# Allow git to transcend FS boundaries
+export GIT_DISCOVERY_ACROSS_FILESYSTEM=1
