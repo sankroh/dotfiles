@@ -89,6 +89,11 @@ function branch() {
     fi
 }
 
+function _git_prompt_string(){
+  git_status
+  echo "${PR_PURPLE}$(branch)${PR_RED}$(dirty)%f${PR_YELLOW}$(untracked)%f"
+}
+
 # determine Ruby version whether using RVM or rbenv
 # the chpwd_functions line cause this to update only when the directory changes
 function _update_ruby_version() {
@@ -115,7 +120,7 @@ _hostname="${PR_GREEN}%m%f"
 _path="${PR_BLUE}$(shortpath)%f"
 _end="${PR_BLUE}»%f"
 
-export PS1="${_time} ${_hostname}:${_path} {${PR_PURPLE}$(virtualenv_info)%f} [${PR_PURPLE}$(branch)${PR_RED}$(dirty)%f${PR_YELLOW}$(untracked)%f]
+export PS1="${_time} ${_hostname}:${_path} {${PR_PURPLE}$(virtualenv_info)%f} [$(_git_prompt_string)]
 ${_end} "
 
 export RPS1="%(?..${PR_RED}%?%f)"
