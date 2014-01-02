@@ -1,0 +1,11 @@
+[user]
+    name = Rohit Sankaran
+    email = rohit.sankaran@gmail.com
+[color]
+    ui = auto
+[push]
+    default = matching
+[core]
+    excludesfile = "~/.gitexcludes"
+[rerere]
+    enabled = true

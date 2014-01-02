@@ -1,0 +1,10 @@
+set nocompatible
+call pathogen#infect()
+syntax on
+set smartindent
+set shiftwidth=4
+set softtabstop=4
+set expandtab
+set number
+set statusline=%{fugitive#statusline()}
+set laststatus=2
