@@ -6,18 +6,21 @@ FILES="
     pylintrc
     vimrc
 "
-# if [ -d ~/.dotfiles ]
-# then
-#   echo "\033[0;33mYou already have One Oh My Zsh Directory.\033[0m You'll need to remove  ~/.dotfiles if you want to clone"
-#   exit
-# fi
-echo "\033[0;34mLooking for an existing zsh config...\033[0m"
+# Text color variables
+txtund=$(tput sgr 0 1)          # Underline
+txtbld=$(tput bold)             # Bold
+bldred=${txtbld}$(tput setaf 1) #  red
+bldblu=${txtbld}$(tput setaf 4) #  blue
+bldwht=${txtbld}$(tput setaf 7) #  white
+txtrst=$(tput sgr0)             # Reset
+
+echo "$(tput bold)Looking for an existing zsh config...${txtrst}"
 if [ -f ~/.zshrc ] || [ -h ~/.zshrc ]
 then
-  echo "\033[0;33mFound ~/.zshrc.\033[0m \033[0;32mBacking up to ~/.zshrc.pre-oh-my-zsh\033[0m";
-  mv ~/.zshrc ~/.zshrc.pre-zsh;
+  echo "$(tput setaf 4)Found ~/.zshrc. ${bldblu}Backing up to ~/.zshrc.old${txtrst}";
+  mv ~/.zshrc ~/.zshrc.old;
 fi
-echo "\033[0;34mUsing the Zsh template file and adding it to ~/.zshrc\033[0m"
+echo "${bldwht}Generating a new .zshrc file and adding it to ~/.zshrc${txtrst}"
 
 for file in $FILES
 do
@@ -26,17 +29,17 @@ do
 
     # Create backup file if the target already exists and is not a symlink
     if [ -e "$TARGET" ] && [ ! -L "$TARGET" ]; then
-        echo "*** WARNING *** $TARGET already exists; copying original to .$file.old"
+        echo "${bldred}*** WARNING *** $TARGET already exists; copying original to .$file.old${txtrst}"
         mv "$TARGET" "$TARGET.old"
     fi
 
     cp "$SOURCE" "$TARGET"
 done
 
-echo "\033[0;34mTime to change your default shell to zsh!\033[0m"
+echo "$(tput setaf 4)Time to change your default shell to zsh!${txtrst}"
 chsh -s `which zsh`
-echo "\n\n \033[0;32m Dotfiles are now installed.\033[0m"
-echo "\n\n \033[0;32mPlease look over the ~/.zshrc file.\033[0m"
+echo "$(tput setaf 4)Dotfiles are now installed.${txtrst}"
+echo "${txtund}$(tput setaf 4)Please look over the ~/.zshrc file.${txtrst}"
 /usr/bin/env zsh
 source ~/.zshrc
 exit 0
