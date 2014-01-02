@@ -12,6 +12,21 @@ function box_name {
     [ -f ~/.box-name ] && cat ~/.box-name || hostname -s
 }
 
+function shortpath() {
+    # Special vim-tab-like shortpath (~/folder/directory/foo => ~/f/d/foo)
+    _pwd=`pwd | sed "s#$HOME#~#"`
+    if [[ $_pwd == "~" ]]; then
+        _dirname=$_pwd
+    else
+        _dirname=`dirname "$_pwd" | esed "s/\/(.)[^\/]*/\/\1/g"`
+        if [[ $_dirname == "/" ]]; then
+            _dirname=""
+        fi
+        _dirname="$_dirname/`basename "$_pwd"`"
+    fi
+    echo "${_dirname}"
+}
+
 # http://blog.joshdick.net/2012/12/30/my_git_prompt_for_zsh.html
 # copied from https://gist.github.com/4415470
 # Adapted from code found at <https://gist.github.com/1712320>.
@@ -26,9 +41,9 @@ GIT_PROMPT_SUFFIX="%{$fg[green]%}]%{$reset_color%}"
 GIT_PROMPT_AHEAD="%{$fg[red]%}ANUM%{$reset_color%}"
 GIT_PROMPT_BEHIND="%{$fg[cyan]%}BNUM%{$reset_color%}"
 GIT_PROMPT_MERGING="%{$fg_bold[magenta]%}⚡︎%{$reset_color%}"
-GIT_PROMPT_UNTRACKED="%{$fg_bold[red]%}u%{$reset_color%}"
-GIT_PROMPT_MODIFIED="%{$fg_bold[yellow]%}d%{$reset_color%}"
-GIT_PROMPT_STAGED="%{$fg_bold[green]%}s%{$reset_color%}"
+GIT_PROMPT_UNTRACKED="%{$fg_bold[yellow]%}*%{$reset_color%}"
+GIT_PROMPT_MODIFIED="%{$fg_bold[red]%}*%{$reset_color%}"
+GIT_PROMPT_STAGED="%{$fg_bold[green]%}*%{$reset_color%}"
 
 # Show Git branch/tag, or name-rev if on detached head
 function parse_git_branch() {
@@ -74,6 +89,10 @@ function parse_git_state() {
 
 }
 
+# Manually cut hostname; hostname -s bails out on some systems.
+HOST=`hostname | cut -d '.' -f 1`
+DOMAIN=`hostname | cut -d '.' -f 2-`
+HOSTNAME=$HOST.$DOMAIN
 
 # If inside a Git repository, print its branch and state
 function git_prompt_string() {
@@ -102,10 +121,20 @@ function current_pwd {
   echo $(pwd | sed -e "s,^$HOME,~,")
 }
 
-PROMPT='
-${PR_GREEN}%n%{$reset_color%} %{$FG[239]%}at%{$reset_color%} ${PR_BOLD_BLUE}$(box_name)%{$reset_color%} %{$FG[239]%}in%{$reset_color%} ${PR_BOLD_YELLOW}$(current_pwd)%{$reset_color%} $(git_prompt_string)
-$(prompt_char) '
+_time="[${PR_GREEN}%T%f]"
+_hostname="${USER}$(HOSTNAME)%f"
+_path="${CWD}$(shortpath)%f"
+_end="${CWD}»%f"
 
-export SPROMPT="Correct $fg[red]%R$reset_color to $fg[green]%r$reset_color [(y)es (n)o (a)bort (e)dit]? "
+export PS1="${_time} ${_hostname}:${_path} {${PR_PURPLE}$(virtualenv_info)%f} [$(git_prompt_string)%f]
+${_end} "
 
-RPROMPT='${PR_GREEN}$(virtualenv_info)%{$reset_color%} ${PR_RED}${ruby_version}%{$reset_color%}'
+export RPS1="%(?..${PR_RED}%?%f)"
+
+# PROMPT='
+# ${PR_GREEN}%n%{$reset_color%} %{$FG[239]%}at%{$reset_color%} ${PR_BOLD_BLUE}$(box_name)%{$reset_color%} %{$FG[239]%}in%{$reset_color%} ${PR_BOLD_YELLOW}$(current_pwd)%{$reset_color%} $(git_prompt_string)
+# $(prompt_char) '
+
+# export SPROMPT="Correct $fg[red]%R$reset_color to $fg[green]%r$reset_color [(y)es (n)o (a)bort (e)dit]? "
+
+# RPROMPT='${PR_GREEN}$(virtualenv_info)%{$reset_color%} ${PR_RED}${ruby_version}%{$reset_color%}'
