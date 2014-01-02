@@ -1,5 +1,16 @@
 function virtualenv_info {
-    [ $VIRTUAL_ENV ] && echo '('`basename $VIRTUAL_ENV`') '
+    # Python virtualenv
+    _venv=`basename "$VIRTUAL_ENV"`
+    venv="" # need this to clear it when we leave a venv
+    if [[ -n $_venv ]]; then
+        venv=$_venv
+    fi
+
+    if [[ -n "$venv" ]]; then
+        echo "$venv"
+    else
+        echo - -
+    fi
 }
 
 function prompt_char {
@@ -18,7 +29,7 @@ function shortpath() {
     if [[ $_pwd == "~" ]]; then
         _dirname=$_pwd
     else
-        _dirname=`dirname "$_pwd" | esed "s/\/(.)[^\/]*/\/\1/g"`
+        _dirname=`dirname "$_pwd" | sed -E "s/\/(.)[^\/]*/\/\1/g"`
         if [[ $_dirname == "/" ]]; then
             _dirname=""
         fi
@@ -34,70 +45,48 @@ function shortpath() {
 #setopt promptsubst
 autoload -U colors && colors # Enable colors in prompt
 
-# Modify the colors and symbols in these variables as desired.
-GIT_PROMPT_SYMBOL="%{$fg[blue]%}±"
-GIT_PROMPT_PREFIX="%{$fg[green]%} [%{$reset_color%}"
-GIT_PROMPT_SUFFIX="%{$fg[green]%}]%{$reset_color%}"
-GIT_PROMPT_AHEAD="%{$fg[red]%}ANUM%{$reset_color%}"
-GIT_PROMPT_BEHIND="%{$fg[cyan]%}BNUM%{$reset_color%}"
-GIT_PROMPT_MERGING="%{$fg_bold[magenta]%}⚡︎%{$reset_color%}"
-GIT_PROMPT_UNTRACKED="%{$fg_bold[yellow]%}*%{$reset_color%}"
-GIT_PROMPT_MODIFIED="%{$fg_bold[red]%}*%{$reset_color%}"
-GIT_PROMPT_STAGED="%{$fg_bold[green]%}*%{$reset_color%}"
-
-# Show Git branch/tag, or name-rev if on detached head
-function parse_git_branch() {
-  (git symbolic-ref -q HEAD || git name-rev --name-only --no-undefined --always HEAD) 2> /dev/null
-}
-
-# Show different symbols as appropriate for various Git repository states
-function parse_git_state() {
-
-  # Compose this value via multiple conditional appends.
-  local GIT_STATE=""
-
-  local NUM_AHEAD="$(git log --oneline @{u}.. 2> /dev/null | wc -l | tr -d ' ')"
-  if [ "$NUM_AHEAD" -gt 0 ]; then
-    GIT_STATE=$GIT_STATE${GIT_PROMPT_AHEAD//NUM/$NUM_AHEAD}
-  fi
-
-  local NUM_BEHIND="$(git log --oneline ..@{u} 2> /dev/null | wc -l | tr -d ' ')"
-  if [ "$NUM_BEHIND" -gt 0 ]; then
-    GIT_STATE=$GIT_STATE${GIT_PROMPT_BEHIND//NUM/$NUM_BEHIND}
-  fi
-
-  local GIT_DIR="$(git rev-parse --git-dir 2> /dev/null)"
-  if [ -n $GIT_DIR ] && test -r $GIT_DIR/MERGE_HEAD; then
-    GIT_STATE=$GIT_STATE$GIT_PROMPT_MERGING
-  fi
-
-  if [[ -n $(git ls-files --other --exclude-standard 2> /dev/null) ]]; then
-    GIT_STATE=$GIT_STATE$GIT_PROMPT_UNTRACKED
-  fi
-
-  if ! git diff --quiet 2> /dev/null; then
-    GIT_STATE=$GIT_STATE$GIT_PROMPT_MODIFIED
-  fi
-
-  if ! git diff --cached --quiet 2> /dev/null; then
-    GIT_STATE=$GIT_STATE$GIT_PROMPT_STAGED
-  fi
-
-  if [[ -n $GIT_STATE ]]; then
-    echo "$GIT_PROMPT_PREFIX$GIT_STATE$GIT_PROMPT_SUFFIX"
-  fi
-
-}
-
-# Manually cut hostname; hostname -s bails out on some systems.
-HOST=`hostname | cut -d '.' -f 1`
-DOMAIN=`hostname | cut -d '.' -f 2-`
-HOSTNAME=$HOST.$DOMAIN
 
 # If inside a Git repository, print its branch and state
 function git_prompt_string() {
   local git_where="$(parse_git_branch)"
-  [ -n "$git_where" ] && echo "on %{$fg[blue]%}${git_where#(refs/heads/|tags/)}%{$reset_color%}$(parse_git_state)"
+  [ -n "$git_where" ] && echo "%{$fg[blue]%}${git_where#(refs/heads/|tags/)}%{$reset_color%}$(parse_git_state)"
+}
+
+function git_status() {
+    _branch=$(git symbolic-ref HEAD 2>/dev/null)
+    current_git_branch=${_branch#refs/heads/}
+}
+
+function dirty() {
+    # Print nothing if not in a git repo
+    [[ -z $current_git_branch ]] && return
+
+    # Git branch / dirtiness
+    # Dirtiness cribbed from:
+    # http://henrik.nyh.se/2008/12/git-dirty-prompt#comment-8325834
+    _dirty="*"
+    if git update-index -q --refresh &>/dev/null; git diff-index --quiet --cached HEAD --ignore-submodules -- 2>/dev/null && git diff-files --quiet --ignore-submodules 2>/dev/null
+        then _dirty=""
+    fi
+    echo $_dirty
+}
+
+function untracked() {
+    [[ -z $current_git_branch ]] && return
+    _untracked=""
+    # Taken from oh-my-zsh/lib/git.zsh
+    if git status --porcelain 2>/dev/null | grep '^??' &>/dev/null
+        then _untracked="*"
+    fi
+    echo $_untracked
+}
+
+function branch() {
+    if [[ -n "$current_git_branch" ]]; then
+        echo "$current_git_branch"
+    else
+        echo - -
+    fi
 }
 
 # determine Ruby version whether using RVM or rbenv
@@ -122,19 +111,11 @@ function current_pwd {
 }
 
 _time="[${PR_GREEN}%T%f]"
-_hostname="${USER}$(HOSTNAME)%f"
-_path="${CWD}$(shortpath)%f"
-_end="${CWD}»%f"
+_hostname="${PR_GREEN}%m%f"
+_path="${PR_BLUE}$(shortpath)%f"
+_end="${PR_BLUE}»%f"
 
-export PS1="${_time} ${_hostname}:${_path} {${PR_PURPLE}$(virtualenv_info)%f} [$(git_prompt_string)%f]
+export PS1="${_time} ${_hostname}:${_path} {${PR_PURPLE}$(virtualenv_info)%f} [${PR_PURPLE}$(branch)${PR_RED}$(dirty)%f${PR_YELLOW}$(untracked)%f]
 ${_end} "
 
 export RPS1="%(?..${PR_RED}%?%f)"
-
-# PROMPT='
-# ${PR_GREEN}%n%{$reset_color%} %{$FG[239]%}at%{$reset_color%} ${PR_BOLD_BLUE}$(box_name)%{$reset_color%} %{$FG[239]%}in%{$reset_color%} ${PR_BOLD_YELLOW}$(current_pwd)%{$reset_color%} $(git_prompt_string)
-# $(prompt_char) '
-
-# export SPROMPT="Correct $fg[red]%R$reset_color to $fg[green]%r$reset_color [(y)es (n)o (a)bort (e)dit]? "
-
-# RPROMPT='${PR_GREEN}$(virtualenv_info)%{$reset_color%} ${PR_RED}${ruby_version}%{$reset_color%}'
