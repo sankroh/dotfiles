@@ -6,11 +6,11 @@ FILES="
     pylintrc
     vimrc
 "
-if [ -d ~/.dotfiles ]
-then
-  echo "\033[0;33mYou already have One Oh My Zsh Directory.\033[0m You'll need to remove  ~/.dotfiles if you want to clone"
-  exit
-fi
+# if [ -d ~/.dotfiles ]
+# then
+#   echo "\033[0;33mYou already have One Oh My Zsh Directory.\033[0m You'll need to remove  ~/.dotfiles if you want to clone"
+#   exit
+# fi
 echo "\033[0;34mLooking for an existing zsh config...\033[0m"
 if [ -f ~/.zshrc ] || [ -h ~/.zshrc ]
 then
