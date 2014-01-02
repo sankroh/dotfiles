@@ -1,4 +1,7 @@
-dotfiles
+Dotfiles
 ========
 
-My dotfiles
+My dotfiles.
+
+Inspired by @holman and @zanshin
+
