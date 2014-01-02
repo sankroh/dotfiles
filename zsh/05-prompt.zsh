@@ -115,12 +115,14 @@ function current_pwd {
   echo $(pwd | sed -e "s,^$HOME,~,")
 }
 
-_time="[${PR_GREEN}%T%f]"
-_hostname="${PR_GREEN}%m%f"
-_path="${PR_BLUE}$(shortpath)%f"
-_end="${PR_BLUE}»%f"
+function precmd() {
+  _time="[${PR_GREEN}%T%f]"
+  _hostname="${PR_GREEN}%m%f"
+  _path="${PR_BLUE}$(shortpath)%f"
+  _end="${PR_BLUE}»%f"
 
-export PS1="${_time} ${_hostname}:${_path} {${PR_PURPLE}$(virtualenv_info)%f} [$(_git_prompt_string)]
+  export PS1="${_time} ${_hostname}:${_path} {${PR_PURPLE}$(virtualenv_info)%f} [$(_git_prompt_string)]
 ${_end} "
 
-export RPS1="%(?..${PR_RED}%?%f)"
+  export RPS1="%(?..${PR_RED}%?%f)"
+}
