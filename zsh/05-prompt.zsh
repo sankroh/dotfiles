@@ -91,7 +91,7 @@ function branch() {
 
 function _git_prompt_string(){
   git_status
-  echo "${PR_PURPLE}$(branch)${PR_RED}$(dirty)%f${PR_YELLOW}$(untracked)%f"
+  echo "${PR_MAGENTA}$(branch)${PR_RED}$(dirty)%f${PR_YELLOW}$(untracked)%f"
 }
 
 # determine Ruby version whether using RVM or rbenv
@@ -121,7 +121,7 @@ function precmd() {
   _path="${PR_BLUE}$(shortpath)%f"
   _end="${PR_BLUE}»%f"
 
-  export PS1="${_time} ${_hostname}:${_path} {${PR_PURPLE}$(virtualenv_info)%f} [$(_git_prompt_string)]
+  export PS1="${_time} ${_hostname}:${_path} {${PR_MAGENTA}$(virtualenv_info)%f} [$(_git_prompt_string)]
 ${_end} "
 
   export RPS1="%(?..${PR_RED}%?%f)"
