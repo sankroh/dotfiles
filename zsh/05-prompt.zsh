@@ -4,12 +4,8 @@ function virtualenv_info {
     venv="" # need this to clear it when we leave a venv
     if [[ -n $_venv ]]; then
         venv=$_venv
-    fi
-
-    if [[ -n "$venv" ]]; then
-        echo "$venv"
-    else
-        echo - -
+    elif [[ -n $ruby_version ]]; then
+        venv=$ruby_version
     fi
 }
 
@@ -94,6 +90,15 @@ function _git_prompt_string(){
   echo "${PR_MAGENTA}$(branch)${PR_RED}$(dirty)%f${PR_YELLOW}$(untracked)%f"
 }
 
+function _venv_prompt_string(){
+  virtualenv_info
+  if [[ -n "$venv" ]]; then
+    echo "$venv"
+  else
+    echo - -
+  fi
+}
+
 # determine Ruby version whether using RVM or rbenv
 # the chpwd_functions line cause this to update only when the directory changes
 function _update_ruby_version() {
@@ -103,7 +108,7 @@ function _update_ruby_version() {
       ruby_version="$(rvm-prompt i v p g)"
     else
       if which rbenv &> /dev/null; then
-        ruby_version="$(rbenv version | sed -e "s/ (set.*$//")"
+        ruby_version="$(rbenv version | sed -e "s/ (set.*$//" -e "s/system//g")"
       fi
     fi
 }
@@ -121,7 +126,7 @@ function precmd() {
   _path="${PR_BLUE}$(shortpath)%f"
   _end="${PR_BLUE}»%f"
 
-  export PS1="${_time} ${_hostname}:${_path} {${PR_MAGENTA}$(virtualenv_info)%f} [$(_git_prompt_string)]
+  export PS1="${_time} ${_hostname}:${_path} {${PR_MAGENTA}$(_venv_prompt_string)%f} [$(_git_prompt_string)]
 ${_end} "
 
   export RPS1="%(?..${PR_RED}%?%f)"
