@@ -3,7 +3,7 @@
 #export PATH=$PATH:/usr/local/bin:/usr/local/sbin:$HOME/bin
 my_path=$HOME/bin
 local_path=/usr/local/bin:/usr/local/sbin
-pgsql_path=/Applications/Postgres.app/Contents/MacOS/bin
+pgsql_path=/Applications/Postgres93.app/Contents/MacOS/bin
 heroku_path=/usr/local/heroku/bin
 export PATH=$heroku_path:$pgsql_path:$local_path:$PATH:$my_path
 
