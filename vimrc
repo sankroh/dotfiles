@@ -8,3 +8,4 @@ set expandtab
 set number
 set statusline=%{fugitive#statusline()}
 set laststatus=2
+set backspace=indent,eol,start
