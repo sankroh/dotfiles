@@ -15,6 +15,9 @@ export DISPLAY=:0.0
 export EDITOR=vim
 export TERM=xterm-256color
 
+# But still use emacs-style zsh bindings
+bindkey -e
+
 # Enable color in grep
 export GREP_OPTIONS='--color=auto'
 export GREP_COLOR='3;33'
