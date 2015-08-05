@@ -27,3 +27,7 @@ export PAGER='less'
 
 # Allow git to transcend FS boundaries
 export GIT_DISCOVERY_ACROSS_FILESYSTEM=1
+
+# GOLANG path
+export PATH=$PATH:/usr/local/opt/go/libexec/bin
+
